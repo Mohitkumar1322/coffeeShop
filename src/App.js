@@ -110,10 +110,10 @@ const AppContent = () => {
       <AnimatedCursor
         innerSize={20}
         outerSize={20}
-        color="104, 225, 239"
+        color="210, 105, 30"
         outerAlpha={0.2}
         innerScale={0.7}
-        outerScale={5}
+        outerScale={4}
       />
 
       <ToastContainer 
