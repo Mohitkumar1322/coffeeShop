@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, removeFromCart } from '../Store/cartSlice';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const CoffeeContainer = styled.div`
   padding: 6rem 2rem 4rem 2rem;
@@ -140,8 +142,17 @@ const QuantityDisplay = styled.span`
 
 function Coffee() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [quantities, setQuantities] = useState({});
   const [likedProducts, setLikedProducts] = useState({});
+
+  // Get authentication state from Redux
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  
+  // Also check legacy localStorage auth
+  const legacyUserData = localStorage.getItem('user');
+  const legacyUser = legacyUserData ? JSON.parse(legacyUserData) : null;
+  const isLoggedIn = isAuthenticated || legacyUser;
 
   // Load favorites from localStorage when component mounts
   useEffect(() => {
@@ -155,6 +166,12 @@ function Coffee() {
 
   // DEBUG VERSION - FIXED TOGGLE HEART FUNCTION
   const toggleHeart = (product) => {
+    if (!isLoggedIn) {
+      toast.info('Please log in to save items to favorites!');
+      navigate('/login');
+      return;
+    }
+
     console.log('🫀 Heart clicked for:', product.name, 'ID:', product.id);
     
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -172,6 +189,7 @@ function Coffee() {
         ...prev,
         [product.id]: false
       }));
+      toast.success('Item removed from favorites');
     } else {
       // Add to favorites
       const favoriteItem = {
@@ -187,6 +205,7 @@ function Coffee() {
         ...prev,
         [product.id]: true
       }));
+      toast.success('Item added to favorites!');
     }
 
     // Trigger update event for navbar counter

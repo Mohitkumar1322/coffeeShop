@@ -331,6 +331,7 @@ function Navbar() {
         { title: "Milkshakes", path: "/shop/milkshake" }
       ]
     },
+    { title: "Recipes", path: "/recipes" },
     { title: "About", path: "/about" },
     { title: "Stories", path: "/stories" },
     { title: "Contact", path: "/contact" },
