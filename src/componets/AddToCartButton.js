@@ -4,7 +4,7 @@ import { addToCart, updateQuantity } from '../Store/cartSlice';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-
+import { useNavigate } from "react-router-dom"; 
 const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
@@ -107,8 +107,11 @@ const BuyNowButton = styled(motion.button)`
 const EnhancedAddToCartButton = ({ product }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
+    // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated); 
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+     console.log("isAuthenticated value from Redux:", isAuthenticated);
   const [isInCart, setIsInCart] = useState(false);
-
+    const navigate = useNavigate(); 
   // Check if product is already in cart
   React.useEffect(() => {
     const cartItem = cartItems.find(item => item.id === product.id);
@@ -116,6 +119,15 @@ const EnhancedAddToCartButton = ({ product }) => {
   }, [cartItems, product.id]);
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+       console.log("User not authenticated → navigating to /login");
+    toast.info("Please login to add items to your cart", { autoClose: 2000 });
+    setTimeout(() => {
+      navigate("/login");  // 🔥 redirect after toast shows
+    }, 1000);
+    return;
+  }
+
     dispatch(addToCart(product));
     toast.success(`${product.name} added to cart!`, { autoClose: 2000 });
   };
@@ -132,6 +144,12 @@ const EnhancedAddToCartButton = ({ product }) => {
   };
 
   const handleBuyNow = () => {
+    if (!isAuthenticated) {
+    toast.info("Please login to continue with Buy Now", { autoClose: 2000 });
+    navigate("/login");   // 👈 redirect to login
+    return;
+  }
+
     dispatch(addToCart(product));
     toast.success(`${product.name} added to cart! Redirecting to checkout...`, { autoClose: 2000 });
     // Navigate to cart page after a short delay
