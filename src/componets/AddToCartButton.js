@@ -114,24 +114,38 @@ const EnhancedAddToCartButton = ({ product }) => {
     const navigate = useNavigate(); 
   // Check if product is already in cart
   React.useEffect(() => {
-    const cartItem = cartItems.find(item => item.id === product.id);
-    setIsInCart(!!cartItem);
-  }, [cartItems, product.id]);
+  const cartItem = cartItems.find(item => item.id === product.id);
 
-  const handleAddToCart = () => {
-    if (!isAuthenticated) {
-       console.log("User not authenticated → navigating to /login");
-    toast.info("Please login to add items to your cart", { autoClose: 2000 });
+  if (cartItem && !isAuthenticated) {
+    // Remove from cart if user is not authenticated
+    dispatch(updateQuantity({ productId: product.id, quantity: 0 }));
+    toast.info("Please login to see your cart", { autoClose: 2000 });
     setTimeout(() => {
-      navigate("/login");  // 🔥 redirect after toast shows
+      window.location.href = "/login";
     }, 1000);
     return;
   }
 
-    dispatch(addToCart(product));
-    toast.success(`${product.name} added to cart!`, { autoClose: 2000 });
-  };
+  setIsInCart(!!cartItem);
+}, [cartItems, product.id, isAuthenticated, dispatch]);
 
+  const handleAddToCart = () => {
+  if (!isAuthenticated) {
+    // Stop any cart action first
+    toast.info("Please login to add items to your cart", { autoClose: 2000 });
+
+    // Redirect after short delay
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
+
+    return; // ✅ make sure nothing else runs
+  }
+
+  // Only runs if authenticated
+  dispatch(addToCart(product));
+  toast.success(`${product.name} added to cart!`, { autoClose: 2000 });
+};
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity <= 0) {
       // Remove from cart if quantity is 0
@@ -168,14 +182,14 @@ const EnhancedAddToCartButton = ({ product }) => {
           whileTap={{ scale: 0.95 }}
           onClick={handleAddToCart}
         >
-          Add to Cart
+          Add to Cart 
         </AddToCartButton>
         <BuyNowButton
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleBuyNow}
         >
-          Buy Now
+          Buy Now 
         </BuyNowButton>
       </ButtonContainer>
     );
