@@ -33,64 +33,66 @@ function SignupPage() {
       navigate("/home");
     }
   }, [isAuthenticated, navigate]);
+// Password validation function
+
+const validatePassword = (password) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+  return regex.test(password);
+};
 
   // Handle traditional form signup
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!name || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields.");
-      return;
+  e.preventDefault();
+
+  if (!name || !email || !password || !confirmPassword) {
+    toast.error("Please fill in all fields.");
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    toast.error("Passwords do not match.");
+    return;
+  }
+
+  if (!validatePassword(password)) {
+    toast.error(
+      "Password must be at least 6 characters and include uppercase, lowercase, number, and special character."
+    );
+    return;
+  }
+
+  if (!acceptTerms) {
+    toast.error("Please accept the Terms and Conditions.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      dispatch(login(data.user));
+      toast.success("Account created successfully! Welcome to MsCafe!");
+      navigate("/home");
+    } else {
+      toast.error(data.message || "Registration failed. Please try again.");
     }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match.");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters long.");
-      return;
-    }
-
-    if (!acceptTerms) {
-      toast.error("Please accept the Terms and Conditions.");
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      console.log('🔗 Using API URL:', API_URL);
-      const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Store token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        dispatch(login(data.user)); // Pass user data to Redux
-        toast.success("Account created successfully! Welcome to MsCafe!");
-        navigate("/home");
-      } else {
-        toast.error(data.message || "Registration failed. Please try again.");
-      }
-      
-    } catch (error) {
-      toast.error("Registration failed. Please check your connection.");
-      console.error("Registration error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  } catch (error) {
+    toast.error("Registration failed. Please check your connection.");
+    console.error("Registration error:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Handle Google Authentication
   const handleGoogleSuccess = async (credentialResponse) => {

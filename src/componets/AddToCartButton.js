@@ -4,7 +4,7 @@ import { addToCart, updateQuantity } from '../Store/cartSlice';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-
+import { useNavigate } from "react-router-dom"; 
 const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
@@ -107,19 +107,45 @@ const BuyNowButton = styled(motion.button)`
 const EnhancedAddToCartButton = ({ product }) => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
+    // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated); 
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+     console.log("isAuthenticated value from Redux:", isAuthenticated);
   const [isInCart, setIsInCart] = useState(false);
-
+    const navigate = useNavigate(); 
   // Check if product is already in cart
   React.useEffect(() => {
-    const cartItem = cartItems.find(item => item.id === product.id);
-    setIsInCart(!!cartItem);
-  }, [cartItems, product.id]);
+  const cartItem = cartItems.find(item => item.id === product.id);
+
+  if (cartItem && !isAuthenticated) {
+    // Remove from cart if user is not authenticated
+    dispatch(updateQuantity({ productId: product.id, quantity: 0 }));
+    toast.info("Please login to see your cart", { autoClose: 2000 });
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
+    return;
+  }
+
+  setIsInCart(!!cartItem);
+}, [cartItems, product.id, isAuthenticated, dispatch]);
 
   const handleAddToCart = () => {
-    dispatch(addToCart(product));
-    toast.success(`${product.name} added to cart!`, { autoClose: 2000 });
-  };
+  if (!isAuthenticated) {
+    // Stop any cart action first
+    toast.info("Please login to add items to your cart", { autoClose: 2000 });
 
+    // Redirect after short delay
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 1000);
+
+    return; // ✅ make sure nothing else runs
+  }
+
+  // Only runs if authenticated
+  dispatch(addToCart(product));
+  toast.success(`${product.name} added to cart!`, { autoClose: 2000 });
+};
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity <= 0) {
       // Remove from cart if quantity is 0
@@ -132,6 +158,12 @@ const EnhancedAddToCartButton = ({ product }) => {
   };
 
   const handleBuyNow = () => {
+    if (!isAuthenticated) {
+    toast.info("Please login to continue with Buy Now", { autoClose: 2000 });
+    navigate("/login");   // 👈 redirect to login
+    return;
+  }
+
     dispatch(addToCart(product));
     toast.success(`${product.name} added to cart! Redirecting to checkout...`, { autoClose: 2000 });
     // Navigate to cart page after a short delay
@@ -150,14 +182,14 @@ const EnhancedAddToCartButton = ({ product }) => {
           whileTap={{ scale: 0.95 }}
           onClick={handleAddToCart}
         >
-          Add to Cart
+          Add to Cart 
         </AddToCartButton>
         <BuyNowButton
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleBuyNow}
         >
-          Buy Now
+          Buy Now 
         </BuyNowButton>
       </ButtonContainer>
     );
