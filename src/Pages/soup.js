@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addToCart, removeFromCart } from '../Store/cartSlice';
-import styled from 'styled-components';
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { addToCart, removeFromCart } from "../Store/cartSlice";
+import styled from "styled-components";
 import { motion } from 'framer-motion';
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { FaHeart, FaShoppingCart, FaMinus, FaPlus } from "react-icons/fa";
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const SoupContainer = styled.div`
   padding: 6rem 2rem 4rem 2rem; // Added top padding for navbar
@@ -136,14 +140,36 @@ const QuantityDisplay = styled.span`
 
 function Soup() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [quantities, setQuantities] = useState({});
   const [likedProducts, setLikedProducts] = useState({});
 
+  // Get authentication state from Redux
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  
+  // Also check legacy localStorage auth
+  const legacyUserData = localStorage.getItem('user');
+  const legacyUser = legacyUserData ? JSON.parse(legacyUserData) : null;
+  const isLoggedIn = isAuthenticated || legacyUser;
+
   const toggleHeart = (productId) => {
+    if (!isLoggedIn) {
+      toast.info('Please log in to save items to favorites!');
+      navigate('/login');
+      return;
+    }
+
     setLikedProducts((prevState) => ({
       ...prevState,
       [productId]: !prevState[productId],
     }));
+    
+    // Show success message
+    if (likedProducts[productId]) {
+      toast.success('Item removed from favorites');
+    } else {
+      toast.success('Item added to favorites!');
+    }
   };
 
   const handleAddToCart = (product) => {
