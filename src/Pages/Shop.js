@@ -11,6 +11,13 @@ import "react-toastify/dist/ReactToastify.css";
 import DynamicText from "./dynamicText";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import ButtonGroup from "@mui/material/ButtonGroup";
+import TodaysDeals from "../componets/TodaysDeals";
+import { addToCart } from "../Store/cartSlice"; // assuming you have this action
+
+
+
+
+
 const ShopContainer = styled.div`
   padding: 6rem 2rem 4rem 2rem;
   max-width: 1200px;
@@ -833,10 +840,23 @@ function Shop() {
     acc[product.type].push(product);
     return acc;
   }, {});
+const todaysDeals = [
+  ...products.filter(p => ["Mocha","Nitro Cold Brew","Chocolate cake","Frappé","Latte"].includes(p.name))
+];
+
 
   return (
     <ShopContainer>
       <FloatingCart />
+      {/* Coffee of the Day Widget */}
+
+
+
+
+
+
+
+
       <Title
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -854,6 +874,7 @@ function Shop() {
           Search
         </SearchButton>
       </SearchFilterContainer>
+      <TodaysDeals deals={todaysDeals} />
       <Title
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
