@@ -98,7 +98,6 @@ const ProtectedRoute = ({ children }) => {
 const AppContent = () => {
   const dispatch = useDispatch();
   const { token, user } = useSelector((state) => state.auth); 
-
   useEffect(() => {
     if (token && !user) {
       dispatch(getCurrentUser());

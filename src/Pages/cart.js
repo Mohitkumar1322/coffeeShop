@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const CartContainer = styled.div`
   padding: 2rem;
@@ -113,6 +114,7 @@ const ProceedButton = styled(motion.button)`
 function Cart() {
   const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleRemoveFromCart = (productId) => {
     dispatch(removeFromCart(productId));
@@ -138,9 +140,8 @@ function Cart() {
   const finalPrice = totalPrice + SGST + CGST;
 
   const handleProceedToPayment = () => {
-    alert("Payment is processing...");
-    dispatch(clearCart());
-    toast.success("Thank you for your purchase!");
+    toast.info("Redirecting to payment...", { autoClose: 1500 });
+    navigate("/checkOut");
   };
 
   return (

@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import Button from '../componets/Button';
 import { clearCart } from '../Store/cartSlice';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CheckoutContainer = styled.div`
   padding: 4rem 2rem;
@@ -63,6 +65,7 @@ function Checkout() {
     // Clear the cart after successful order
     dispatch(clearCart());
     // Reset form after submission
+    toast.success("Thank you for your purchase!");
     setFormData({ name: '', email: '', address: '', city: '', zipCode: '' });
   };
 
